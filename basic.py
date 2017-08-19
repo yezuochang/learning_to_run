@@ -8,5 +8,3 @@ for i in range(200):
     if done:
         env.reset()
 #        break
-    
-

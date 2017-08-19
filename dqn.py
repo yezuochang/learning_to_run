@@ -137,9 +137,12 @@ class DQNAgent(AbstractDQNAgent):
             test_policy = GreedyQPolicy()
         self.policy = policy
         self.test_policy = test_policy
-
+        
         # State.
         self.reset_states()
+
+        self.X = []
+        self.Y = []
 
     def get_config(self):
         config = super(DQNAgent, self).get_config()
@@ -221,6 +224,14 @@ class DQNAgent(AbstractDQNAgent):
             action = self.test_policy.select_action(q_values=q_values)
         if self.processor is not None:
             action = self.processor.process_action(action)
+        # print ''
+        # print 's0', self.recent_observation
+        # print 'act', action
+        # print 's1', observation
+        # print self.X, self.recent_observation, [action]
+        if self.recent_observation is not None:
+            self.X.append(self.recent_observation.tolist()+[action])
+            self.Y.append((observation-self.recent_observation).tolist())
 
         # Book-keeping.
         self.recent_observation = observation
@@ -231,9 +242,6 @@ class DQNAgent(AbstractDQNAgent):
     def backward(self, reward, terminal):
         # Store most recent experience in memory.
         if self.step % self.memory_interval == 0:
-            print ''
-            print 'observation', self.recent_observation 
-            print 'action', self.recent_action            
             self.memory.append(self.recent_observation, self.recent_action, reward, terminal,
                                training=self.training)
 
@@ -650,6 +658,7 @@ class NAFAgent(AbstractDQNAgent):
         return action
 
     def backward(self, reward, terminal):
+        print 'r', reward
         # Store most recent experience in memory.
         if self.step % self.memory_interval == 0:
             self.memory.append(self.recent_observation, self.recent_action, reward, terminal,
