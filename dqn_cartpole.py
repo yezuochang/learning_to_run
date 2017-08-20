@@ -10,9 +10,15 @@ import dqn
 DQNAgent = dqn.DQNAgent
 from rl.policy import BoltzmannQPolicy
 from rl.memory import SequentialMemory
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import ConstantKernel, RBF
 
+gp_kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(0.0, 10.0)) * RBF(length_scale=0.5, length_scale_bounds=(0.0, 10.0)) + RBF(length_scale=2.0, length_scale_bounds=(0.0, 10.0))
+
+gpr = GaussianProcessRegressor(kernel=gp_kernel)
 
 ENV_NAME = 'CartPole-v0'
+
 
 
 # Get the environment and extract the number of actions.
@@ -52,11 +58,18 @@ ff = fit.Model(n_observation=4, n_action=1)
 # X = np.array(dqn.X)
 # Y = np.array(dqn.Y)
 
-ff.model.fit(dqn.X, dqn.Y, nb_epoch=2000, batch_size=16)
-print np.array(dqn.Y)
-print ff.model.predict(dqn.X)
+X_train = dqn.X[1:4000]
+Y_train = dqn.Y[1:4000]
+X_test = dqn.X[4001:5000]
+Y_test = dqn.Y[4001:5000]
 
+#gpr.fit(X_train, Y_train)
+#print np.array(Y_test)
+#print gpr.predict(X_test)
 
+ff.model.fit(X_train, Y_train, nb_epoch=50000, batch_size=32)
+print np.array(Y_test)
+print ff.model.predict(X_test)
 
 # After training is done, we save the final weights.
 # dqn.save_weights('dqn_{}_weights.h5f'.format(ENV_NAME), overwrite=True)

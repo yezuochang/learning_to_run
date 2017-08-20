@@ -7,12 +7,19 @@ import random
 class Model:
   def __init__(self, n_observation, n_action):
     model = Sequential()
+    n = 64
     input_shape = (n_observation+n_action,)
-    model.add(Dense(32, input_shape=input_shape))
+    model.add(Dense(n, input_shape=input_shape))
     model.add(Activation('relu'))
-    model.add(Dense(32, input_shape=input_shape))
+    model.add(Dense(n))
     model.add(Activation('relu'))
-    model.add(Dense(32, input_shape=input_shape))
+    model.add(Dense(n))
+    model.add(Activation('relu'))
+    model.add(Dense(n))
+    model.add(Activation('relu'))
+    model.add(Dense(n))
+    model.add(Activation('relu'))
+    model.add(Dense(n))
     model.add(Activation('tanh'))        
     model.add(Dense(n_observation))    
     model.compile(loss='mean_squared_error', optimizer='rmsprop')
