@@ -143,6 +143,7 @@ class DQNAgent(AbstractDQNAgent):
 
         self.X = []
         self.Y = []
+        self.x = []
 
     def get_config(self):
         config = super(DQNAgent, self).get_config()
@@ -230,8 +231,11 @@ class DQNAgent(AbstractDQNAgent):
         # print 's1', observation
         # print self.X, self.recent_observation, [action]
         if self.recent_observation is not None:
-            self.X.append(self.recent_observation.tolist()+[action])
-            self.Y.append((observation-self.recent_observation).tolist())
+            self.x += self.recent_observation.tolist()+[action]
+            if len(self.x) == 10:
+                self.X.append(self.x)
+                self.Y.append((observation-self.recent_observation).tolist())
+                self.x = self.x[5:]
 
         # Book-keeping.
         self.recent_observation = observation

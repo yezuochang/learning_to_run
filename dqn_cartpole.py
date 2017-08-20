@@ -10,12 +10,12 @@ import dqn
 DQNAgent = dqn.DQNAgent
 from rl.policy import BoltzmannQPolicy
 from rl.memory import SequentialMemory
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import ConstantKernel, RBF
+# from sklearn.gaussian_process import GaussianProcessRegressor
+# from sklearn.gaussian_process.kernels import ConstantKernel, RBF
 
-gp_kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(0.0, 10.0)) * RBF(length_scale=0.5, length_scale_bounds=(0.0, 10.0)) + RBF(length_scale=2.0, length_scale_bounds=(0.0, 10.0))
+# gp_kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(0.0, 10.0)) * RBF(length_scale=0.5, length_scale_bounds=(0.0, 10.0)) + RBF(length_scale=2.0, length_scale_bounds=(0.0, 10.0))
 
-gpr = GaussianProcessRegressor(kernel=gp_kernel)
+# gpr = GaussianProcessRegressor(kernel=gp_kernel)
 
 ENV_NAME = 'CartPole-v0'
 
@@ -67,10 +67,15 @@ Y_test = dqn.Y[4001:5000]
 #print np.array(Y_test)
 #print gpr.predict(X_test)
 
-ff.model.fit(X_train, Y_train, nb_epoch=50000, batch_size=32)
-print np.array(Y_test)
-print ff.model.predict(X_test)
+ff.model.fit(X_train, Y_train, nb_epoch=500, batch_size=32)
+for i in range(5):
+    print X_test[i]
+# print np.array(X_test), "\n"
+print np.array(Y_test), "\n"
 
+y = ff.model.predict(X_test)
+print y , "\n"
+print y-Y_test, "\n"
 # After training is done, we save the final weights.
 # dqn.save_weights('dqn_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
 
