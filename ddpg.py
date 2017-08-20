@@ -74,6 +74,9 @@ class DDPGAgent(Agent):
         # State.
         self.compiled = False
         self.reset_states()
+        self.X = []
+        self.Y = []
+        self.x = []
 
     @property
     def uses_learning_phase(self):
@@ -233,6 +236,24 @@ class DDPGAgent(Agent):
         if self.processor is not None:
             action = self.processor.process_action(action)
         
+        if self.recent_observation is not None:
+            # print self.recent_observation
+            # print observation
+            # print action
+            for k in range(len(observation)):
+                self.x.append(self.recent_observation[k])
+            for k in range(len(action)):
+                self.x.append(action[k])
+            # self.x += self.recent_observation+action
+            if len(self.x) == (len(observation)+len(action))*2:
+                self.X.append(self.x)
+                y = [None]*len(observation) 
+                for k in range(len(observation)):
+                    y[k] = observation[k] - self.recent_observation[k]
+                self.Y.append(y)
+                # self.Y.append(observation-self.recent_observation)
+                self.x = self.x[len(observation)+len(action):]
+
         # Book-keeping.
         self.recent_observation = observation
         self.recent_action = action
@@ -253,9 +274,9 @@ class DDPGAgent(Agent):
     def backward(self, reward, terminal=False):
         # Store most recent experience in memory.
         if self.step % self.memory_interval == 0:
-            print ''
-            print 'observation', self.recent_observation 
-            print 'action', self.recent_action
+            # print ''
+            # print 'observation', self.recent_observation 
+            # print 'action', self.recent_action
             self.memory.append(self.recent_observation, self.recent_action, reward, terminal,
                                training=self.training)
 

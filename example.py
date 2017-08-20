@@ -79,7 +79,7 @@ agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_acti
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3,
                   delta_clip=1.)
-# agent = ContinuousDQNAgent(nb_actions=env.noutput, V_model=V_model, L_model=L_model, mu_model=mu_model,
+# agent = ContinuousddpgAgent(nb_actions=env.noutput, V_model=V_model, L_model=L_model, mu_model=mu_model,
 #                            memory=memory, nb_steps_warmup=1000, random_process=random_process,
 #                            gamma=.99, target_model_update=0.1)
 agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
@@ -91,6 +91,47 @@ if args.train:
     agent.fit(env, nb_steps=nallsteps, visualize=False, verbose=1, nb_max_episode_steps=env.timestep_limit, log_interval=10000)
     # After training is done, we save the final weights.
     agent.save_weights(args.model, overwrite=True)
+    import fit 
+    ff = fit.Model(
+        n_observation=env.observation_space.shape[0], 
+        n_action=nb_actions)
+    # X = np.array(ddpg.X)
+    # Y = np.array(ddpg.Y)
+    nsteps = nallsteps
+    ntrain = int(nsteps*0.8)
+
+    agent.X = np.array(agent.X)
+    agent.Y = np.array(agent.Y)
+
+    X_train = agent.X[1:ntrain]
+    Y_train = agent.Y[1:ntrain]
+    X_test = agent.X[ntrain+1:nsteps]
+    Y_test = agent.Y[ntrain+1:nsteps]
+
+    #gpr.fit(X_train, Y_train)
+    #print np.array(Y_test)
+    #print gpr.predict(X_test)
+    meanY = np.mean(Y_train, 0)
+    stdY = np.std(Y_train, 0)
+    for k in range(len(stdY)):
+        if stdY[k] == 0: 
+            stdY[k] = 1.0
+    Y_train = np.subtract(Y_train, meanY)
+    Y_train = np.divide(Y_train, stdY)
+
+    Y_test = np.subtract(Y_test, meanY)
+    Y_test = np.divide(Y_test, stdY)
+
+
+    ff.model.fit(X_train, Y_train, epochs=500, batch_size=32)
+    # for i in range(5):
+    #     print X_test[i]
+    # # print np.array(X_test), "\n"
+    # print np.array(Y_test), "\n"
+
+    # y = ff.model.predict(X_test)
+    # print y , "\n"
+    # print y-Y_test, "\n"
 
 # If TEST and TOKEN, submit to crowdAI
 if not args.train and args.token:
