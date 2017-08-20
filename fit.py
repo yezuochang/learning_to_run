@@ -7,7 +7,7 @@ import random
 class Model:
   def __init__(self, n_observation, n_action):
     model = Sequential()
-    n = 16
+    n = 32
     input_shape = ((n_observation+n_action)*2,)
     model.add(Dense(n, input_shape=input_shape))
     model.add(Activation('relu'))

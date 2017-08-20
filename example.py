@@ -123,7 +123,7 @@ if args.train:
     Y_test = np.divide(Y_test, stdY)
 
 
-    ff.model.fit(X_train, Y_train, epochs=500, batch_size=32)
+    ff.model.fit(X_train, Y_train, epochs=50000, batch_size=32)
     # for i in range(5):
     #     print X_test[i]
     # # print np.array(X_test), "\n"
