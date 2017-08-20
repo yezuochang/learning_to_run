@@ -123,15 +123,15 @@ if args.train:
     Y_test = np.divide(Y_test, stdY)
 
 
-    ff.model.fit(X_train, Y_train, epochs=50000, batch_size=32)
-    # for i in range(5):
-    #     print X_test[i]
-    # # print np.array(X_test), "\n"
-    # print np.array(Y_test), "\n"
-
-    # y = ff.model.predict(X_test)
-    # print y , "\n"
-    # print y-Y_test, "\n"
+    ff.model.fit(X_train, Y_train, epochs=10000, batch_size=32)
+    file = open('output.txt','w')
+    for i in range(5):
+        print X_test[i]
+    # print np.array(X_test), "\n"
+    print >>file, np.array(Y_test), "\n"
+    y = ff.model.predict(X_test)
+    print >>file, y , "\n"
+    print >>file, y-Y_test, "\n"
 
 # If TEST and TOKEN, submit to crowdAI
 if not args.train and args.token:
