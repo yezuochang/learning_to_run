@@ -51,23 +51,25 @@ dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
-dqn.fit(env, nb_steps=5000, visualize=False, verbose=2)
+nsteps = 50000
+ntrain = 40000
+dqn.fit(env, nb_steps=nsteps, visualize=False, verbose=2)
 
 import fit 
 ff = fit.Model(n_observation=4, n_action=1)
 # X = np.array(dqn.X)
 # Y = np.array(dqn.Y)
 
-X_train = dqn.X[1:4000]
-Y_train = dqn.Y[1:4000]
-X_test = dqn.X[4001:5000]
-Y_test = dqn.Y[4001:5000]
+X_train = dqn.X[1:ntrain]
+Y_train = dqn.Y[1:ntrain]
+X_test = dqn.X[ntrain+1:nsteps]
+Y_test = dqn.Y[ntrain+1:nsteps]
 
 #gpr.fit(X_train, Y_train)
 #print np.array(Y_test)
 #print gpr.predict(X_test)
 
-ff.model.fit(X_train, Y_train, nb_epoch=500, batch_size=32)
+ff.model.fit(X_train, Y_train, nb_epoch=5000, batch_size=32)
 for i in range(5):
     print X_test[i]
 # print np.array(X_test), "\n"
