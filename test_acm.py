@@ -10,8 +10,7 @@ from keras.optimizers import Adam
 import numpy as np
 
 # from rl.agents import DDPGAgent
-import ddpg
-DDPGAgent = ddpg.DDPGAgent
+import acm
 
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
@@ -94,7 +93,7 @@ class CB(Callback):
 # Set up the agent for training
 memory = SequentialMemory(limit=100000, window_length=1)
 random_process = OrnsteinUhlenbeckProcess(theta=.15, mu=0., sigma=.2, size=env.noutput)
-agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
+agent = acm.ACMAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3,
                   delta_clip=1.)
