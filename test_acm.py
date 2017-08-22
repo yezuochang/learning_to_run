@@ -85,11 +85,6 @@ x = Dense(env.observation_space.shape[0])(x)
 x = Activation('tanh')(x)
 env_model = Model(inputs=[action_input, observation_input], outputs=x)
 
-class CB(Callback):
-    def on_step_end(self, step, logs):
-        print '\nstep', step
-        print logs
-
 # Set up the agent for training
 memory = SequentialMemory(limit=100000, window_length=1)
 random_process = OrnsteinUhlenbeckProcess(theta=.15, mu=0., sigma=.2, size=env.noutput)
@@ -108,7 +103,7 @@ agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 if args.train:
     agent.fit(env, nb_steps=nallsteps, visualize=False, 
         verbose=1, nb_max_episode_steps=env.timestep_limit, 
-        log_interval=10000, callbacks=[CB()])
+        log_interval=10000)
     # After training is done, we save the final weights.
     agent.save_weights(args.model, overwrite=True)
     import fit 
