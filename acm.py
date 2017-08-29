@@ -74,12 +74,13 @@ class ACMAgent(DDPGAgent):
                 self.env_model.train_on_batch(state0_batch_with_action, targets)
                 if self.step % 10 == 0:
                     y = self.env_model.predict_on_batch(state0_batch_with_action)
-                    print targets
-                    print y-targets
-                    d1 = np.linalg.norm(targets)
-                    d2 = np.linalg.norm(y-targets)
-                    print d1, d2
-                    print 'Error: ', d2/d1
+                    d = y-targets
+                    for c in range(self.batch_size):
+                        e1 = np.linalg.norm(targets[c])
+                        e2 = np.linalg.norm(y[c]-targets[c])
+                        print targets[c]
+                        print y[c]-targets[c]
+                        print e1, e2, e2/e1
 
 
     def fit(self, env, nb_steps, action_repetition=1, callbacks=None, verbose=1,
