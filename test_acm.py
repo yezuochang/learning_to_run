@@ -73,7 +73,9 @@ x = Activation('linear')(x)
 critic = Model(inputs=[action_input, observation_input], outputs=x)
 print(critic.summary())
 
-
+# action_input = Input(shape=(nb_actions,), name='action_input')
+# observation_input = Input(shape=(1,) + env.observation_space.shape, name='observation_input')
+# flattened_observation = Flatten()(observation_input)
 inp = concatenate([action_input, flattened_observation])
 x = Dense(64)(inp)
 x = Activation('relu')(x)
@@ -88,7 +90,9 @@ env_model = Model(inputs=[action_input, observation_input], outputs=x)
 # Set up the agent for training
 memory = SequentialMemory(limit=100000, window_length=1)
 random_process = OrnsteinUhlenbeckProcess(theta=.15, mu=0., sigma=.2, size=env.noutput)
-agent = ACMAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
+agent = ACMAgent(nb_actions=nb_actions, 
+                  actor=actor, critic=critic, env_model=env_model, 
+                  critic_action_input=action_input,
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3,
                   delta_clip=1.)
