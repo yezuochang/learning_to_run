@@ -31,56 +31,57 @@ class ACMAgent(DDPGAgent):
     def on_epsode_begin(self, step, logs):
         # print 'step', step
         pass
+    def train_env_model(self):
+        experiences = self.memory.sample(self.batch_size)
+        assert len(experiences) == self.batch_size
+        state0_batch = []
+        reward_batch = []
+        action_batch = []
+        terminal1_batch = []
+        state1_batch = []
+        for e in experiences:
+            state0_batch.append(e.state0)
+            state1_batch.append(e.state1)
+            reward_batch.append(e.reward)
+            action_batch.append(e.action)
+            terminal1_batch.append(0. if e.terminal1 else 1.)
+
+        # Prepare and validate parameters.
+        state0_batch = self.process_state_batch(state0_batch)
+        state1_batch = self.process_state_batch(state1_batch)
+        terminal1_batch = np.array(terminal1_batch)
+        reward_batch = np.array(reward_batch)
+        action_batch = np.array(action_batch)
+        state1_batch = np.array(state1_batch)
+        assert reward_batch.shape == (self.batch_size,)
+        assert terminal1_batch.shape == reward_batch.shape
+        assert action_batch.shape == (self.batch_size, self.nb_actions)
+
+        # Perform a single batch update on the critic network.
+        if len(self.critic.inputs) >= 3:
+            state0_batch_with_action = state0_batch[:]
+        else:
+            state0_batch_with_action = [state0_batch]
+        # print e.state1, e.state1.shape
+        targets = state1_batch.reshape(self.batch_size, len(e.state1[0]))
+        state0_batch_with_action.insert(self.critic_action_input_idx, action_batch)
+        self.env_model.train_on_batch(state0_batch_with_action, targets)
+        
+        y = self.env_model.predict_on_batch(state0_batch_with_action)
+        loss = 0.0
+        for c in range(self.batch_size):
+            e1 = np.linalg.norm(targets[c])
+            e2 = np.linalg.norm(y[c]-targets[c])
+            # print targets[c]
+            # print y[c]-targets[c]
+            loss += e2/e1
+        print '\nError: ', loss/self.batch_size
 
     def on_step_end(self, step, logs):
-        print '\nstep', step, self.nb_steps_warmup_actor
         can_train_either = self.step > self.nb_steps_warmup_critic or self.step > self.nb_steps_warmup_actor
         if can_train_either and self.step % self.train_interval == 0:
-            experiences = self.memory.sample(self.batch_size)
-            assert len(experiences) == self.batch_size
-            state0_batch = []
-            reward_batch = []
-            action_batch = []
-            terminal1_batch = []
-            state1_batch = []
-            for e in experiences:
-                state0_batch.append(e.state0)
-                state1_batch.append(e.state1)
-                reward_batch.append(e.reward)
-                action_batch.append(e.action)
-                terminal1_batch.append(0. if e.terminal1 else 1.)
-
-            # Prepare and validate parameters.
-            state0_batch = self.process_state_batch(state0_batch)
-            state1_batch = self.process_state_batch(state1_batch)
-            terminal1_batch = np.array(terminal1_batch)
-            reward_batch = np.array(reward_batch)
-            action_batch = np.array(action_batch)
-            state1_batch = np.array(state1_batch)
-            assert reward_batch.shape == (self.batch_size,)
-            assert terminal1_batch.shape == reward_batch.shape
-            assert action_batch.shape == (self.batch_size, self.nb_actions)
-
-            # Update critic, if warm up is over.
-            if self.step > self.nb_steps_warmup_critic:
-                # Perform a single batch update on the critic network.
-                if len(self.critic.inputs) >= 3:
-                    state0_batch_with_action = state0_batch[:]
-                else:
-                    state0_batch_with_action = [state0_batch]
-                # print e.state1, e.state1.shape
-                targets = state1_batch.reshape(self.batch_size, len(e.state1[0]))
-                state0_batch_with_action.insert(self.critic_action_input_idx, action_batch)
-                self.env_model.train_on_batch(state0_batch_with_action, targets)
-                if self.step % 10 == 0:
-                    y = self.env_model.predict_on_batch(state0_batch_with_action)
-                    d = y-targets
-                    for c in range(self.batch_size):
-                        e1 = np.linalg.norm(targets[c])
-                        e2 = np.linalg.norm(y[c]-targets[c])
-                        print targets[c]
-                        print y[c]-targets[c]
-                        print e1, e2, e2/e1
+            for k in range(10):
+                self.train_env_model()
 
 
     def fit(self, env, nb_steps, action_repetition=1, callbacks=None, verbose=1,
